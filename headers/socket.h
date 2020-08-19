@@ -24,6 +24,7 @@ typedef struct{
     SOCKADDR_IN session(const char *host,int port);
     SOCKADDR_IN sessionbind(short family,int port);
     void ExecuteAndStreamProcess(SOCKET fd,const char *process);
+    int rdata(SOCKET s, char* buffer, int len,int flags);
 
 #elif __unix__
     #include <sys/types.h>
@@ -54,6 +55,7 @@ typedef struct{
     SOCKADDR_IN session(const char *host,int port);
     SOCKADDR_IN sessionbind(short family,int port);
     void ExecuteAndStreamProcess(SOCKET fd,const char *process);
+    int rdata(SOCKET s, char* buffer, int len,int flags);
 
     
 
