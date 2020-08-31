@@ -4,7 +4,7 @@
 
     SOCKET Socket(short family,int type,int protocol)
     {
-        WSADATA wsa;
+        struct WSADATA wsa;
         WSAStartup(MAKEWORD(2,2),&wsa);
         return (WSASocketA(family,type,protocol,0,0,0));
     }
