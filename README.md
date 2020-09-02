@@ -47,7 +47,7 @@ int main()
     }
 
     SOCKET nfd = Accept(fd);
-    char *b = "Hello World";
+    char b[] = "Hello World";
     Send(nfd,b,0);
     closesocket(nfd);
 
