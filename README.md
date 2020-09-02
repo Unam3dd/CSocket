@@ -24,7 +24,7 @@ int main(){
         printf("[!] Error : Connecting to Remote Host !");
     }
 
-    return 0;
+    return (0);
 }
 ```
 
