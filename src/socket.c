@@ -1,10 +1,10 @@
-#include "../include/socket.h"
+#include "../headers/socket.h"
 
 #ifdef _WIN32
 
     SOCKET Socket(short family,int type,int protocol)
     {
-        struct WSADATA wsa;
+        WSADATA wsa;
         WSAStartup(MAKEWORD(2,2),&wsa);
         return (WSASocketA(family,type,protocol,0,0,0));
     }
@@ -13,6 +13,36 @@
     {
         struct sockaddr_in ss = session(host,port);
         return (WSAConnect(fd,(SOCKADDR *)&ss,sizeof(ss),0,0,0,0));
+    }
+
+    int ConnectTimeout(SOCKET fd,const char *host, int port, int ms)
+    {
+        struct sockaddr_in ss = session(host,port);
+        unsigned long mode = -1;
+
+        memset(&Write,0,sizeof(Write));
+        memset(&Err,0,sizeof(Err));
+        memset(&t,0,sizeof(t));
+
+        t.tv_sec = ms / 1000;
+        t.tv_usec = (ms %1000) * 1000;
+
+        ioctlsocket(fd,FIONBIO,&mode);
+        WSAConnect(fd,(struct sockaddr *)&ss,sizeof(ss),0,0,0,0);
+        FD_ZERO(&Write);
+        FD_ZERO(&Err);
+        FD_SET(fd,&Write);
+        FD_SET(fd,&Err);
+
+        select(0,NULL,&Write,&Err,&t);
+
+        if (FD_ISSET(fd,&Write)){
+            mode = 0;
+            ioctlsocket(fd,FIONBIO,&mode);
+            return (0);
+        }
+        else
+            return (SOCKET_ERROR);
     }
 
     int Bind(SOCKET fd,int port)
@@ -144,7 +174,6 @@
     }
 
 #elif __unix__
-
     SOCKET Socket(short family,int type,int protocol)
     {
         return (socket(family,type,protocol));
@@ -153,6 +182,17 @@
     int Connect(SOCKET fd,const char *host,int port)
     {
         struct sockaddr_in ss = session(host,port);
+        return (connect(fd,(SOCKADDR *)&ss,sizeof(ss)));
+    }
+
+    int ConnectTimeout(SOCKET fd,const char *host, int port, int ms)
+    {
+        struct sockaddr_in ss = session(host,port);
+
+        memset(&t,0,sizeof(t));
+        t.tv_sec = ms / 1000;
+        t.tv_usec = (ms %1000) * 1000;
+        setsockopt(fd,SOL_SOCKET,SO_SNDTIMEO,&t,sizeof(t));
         return (connect(fd,(SOCKADDR *)&ss,sizeof(ss)));
     }
 
@@ -180,45 +220,26 @@
         return (send(fd,data,strlen(data),flags));
     }
 
-    int SendTimeout(SOCKET fd,const char *data,int seconds,int flags)
+    int SendTimeout(SOCKET fd,const char *data,unsigned long ms,int flags)
     {
-        sleep(seconds);
+        Sleep(ms);
         return (send(fd,data,strlen(data),flags));
     }
 
-    int RecvData(SOCKET fd,char *buffer,int bytes,int flags)
+    char *RecvData(SOCKET fd,int bytes,int flags)
     {
-        if (buffer == NULL)
-        {
-            return (0);
-        }
-
+        char buffer[bytes];
         memset(buffer,0,sizeof(buffer));
         rdata(fd,buffer,(bytes-1),flags);
-        if (buffer != NULL)
-        {
-            return (strlen(buffer));
-        }
-        return (0);
+        return (buffer);
     }
 
-    int RecvDataTimeout(SOCKET fd,char *buffer,int bytes,int flags,int seconds)
+    char *RecvDataTimeout(SOCKET fd,int bytes,int flags,unsigned long ms)
     {
-        if (buffer == NULL)
-        {
-            return (SOCKET_ERROR);
-        }
-        
-        sleep(seconds);
-
+        char buffer[bytes];
         memset(buffer,0,sizeof(buffer));
         rdata(fd,buffer,(bytes-1),flags);
-        if (buffer != NULL)
-        {
-            return (strlen(buffer));
-        }
-        
-        return (SOCKET_ERROR);
+        return (buffer);
     }
 
     peer_t GetPeerName(SOCKET fd)
