@@ -44,7 +44,8 @@ typedef struct{
     #define INVALID_SOCKET -1
     #define SOCKET_ERROR -1
     #define closesocket(s) close(s)
-
+    
+    struct timeval t;
     typedef int SOCKET;
     typedef struct sockaddr_in SOCKADDR_IN;
 
