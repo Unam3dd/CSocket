@@ -40,7 +40,8 @@ typedef struct{
     #include <netdb.h>
     #include <unistd.h>
     #include <string.h>
-
+    
+    struct timeval t;
     #define INVALID_SOCKET -1
     #define SOCKET_ERROR -1
     #define closesocket(s) close(s)
