@@ -58,7 +58,6 @@
 
     SOCKET Accept(SOCKET fd)
     {
-        SOCKET csock;
         SOCKADDR_IN csin = {0};
         int sinsize = sizeof(csin);
         return (accept(fd,(SOCKADDR *)&csin,&sinsize));
